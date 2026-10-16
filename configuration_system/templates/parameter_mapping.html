@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}
+Parameter Mapping | TestPro
+{% endblock %}
+
+{% block page_title %}
+Parameter Mapping
+{% endblock %}
+
+{% block page_description %}
+Generate PLC and PC parameter mappings from TestPro configuration
+{% endblock %}
+
+{% block content %}
+
+<div class="welcome-section">
+
+    <h1>Parameter Mapping</h1>
+
+    <p>
+        Generate the PLC to PC parameter mapping
+        from the TestPro configuration database.
+    </p>
+
+</div>
+
+
+<div class="migration-workspace">
+
+    <div class="workspace-header">
+
+        <div>
+
+            <h2>Database Connection</h2>
+
+            <p>
+                Connect to the TestPro configuration database
+                to generate parameter mappings.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="configuration-section">
+
+        <div class="section-icon">
+            ⇄
+        </div>
+
+        <div class="analysis-input-area">
+
+            <form method="POST"
+                  action="/migration/parameter-mapping">
+
+                <div class="folder-input-row">
+
+                    <input
+                        type="text"
+                        name="server"
+                        class="text-input"
+                        placeholder="Server"
+                        value="{{ request.form.get('server', '') }}"
+                        required
+                    >
+
+                    <input
+                        type="text"
+                        name="database"
+                        class="text-input"
+                        placeholder="Database / MDF path"
+                        value="{{ request.form.get('database', '') }}"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="folder-input-row">
+
+                    <select
+                        name="auth_mode"
+                        class="text-input">
+
+                        <option
+                            value="Windows Authentication"
+                            {% if request.form.get('auth_mode') == 'Windows Authentication'
+                            or not request.form.get('auth_mode') %}
+                            selected
+                            {% endif %}>
+                            Windows Authentication
+                        </option>
+
+                        <option
+                            value="SQL Server Authentication"
+                            {% if request.form.get('auth_mode') == 'SQL Server Authentication' %}
+                            selected
+                            {% endif %}>
+                            SQL Server Authentication
+                        </option>
+
+                    </select>
+
+
+                    <input
+                        type="text"
+                        name="username"
+                        class="text-input"
+                        placeholder="Username"
+                        value="{{ request.form.get('username', '') }}"
+                    >
+
+
+                    <input
+                        type="password"
+                        name="password"
+                        class="text-input"
+                        placeholder="Password"
+                    >
+
+
+                    <button
+                        type="submit"
+                        class="secondary-button">
+
+                        Generate Mapping
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{% if mapping_result is not none %}
+
+<div class="migration-workspace">
+
+    <div class="workspace-header">
+
+        <div>
+
+            <h2>Parameter Mapping</h2>
+
+            <p>
+                PLC and PC parameter mappings generated from
+                the TestPro configuration.
+            </p>
+
+        </div>
+
+
+        <form method="POST"
+            action="/migration/parameter-mapping/download">
+
+            <input
+                type="hidden"
+                name="server"
+                value="{{ request.form.get('server', '') }}"
+            >
+
+            <input
+                type="hidden"
+                name="database"
+                value="{{ request.form.get('database', '') }}"
+            >
+
+            <input
+                type="hidden"
+                name="auth_mode"
+                value="{{ request.form.get('auth_mode', '') }}"
+            >
+
+            <input
+                type="hidden"
+                name="username"
+                value="{{ request.form.get('username', '') }}"
+            >
+
+            <input
+                type="hidden"
+                name="password"
+                value="{{ request.form.get('password', '') }}"
+            >
+
+            <button
+                type="submit"
+                class="secondary-button">
+                ↓ Download Excel
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <div class="parameter-table-card">
+
+        <div class="parameter-table-scroll">
+
+            <table class="analysis-table">
+
+                <thead>
+
+                    <tr>
+
+                        {% for column in mapping_result.columns %}
+
+                        <th>
+                            {{ column }}
+                        </th>
+
+                        {% endfor %}
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for row in mapping_result.to_dict('records') %}
+
+                    <tr>
+
+                        {% for column in mapping_result.columns %}
+
+                        <td>
+                            {{ row[column] }}
+                        </td>
+
+                        {% endfor %}
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% endblock %}

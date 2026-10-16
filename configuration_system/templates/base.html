@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
+         viewBox='0 0 24 24'%3E%3Crect x='4' y='4' width='7' height='7' rx='1.5' fill='%232979ff'
+         stroke='%23f8fafc' stroke-width='1.8'/%3E%3Crect x='13' y='13' width='7' height='7' 
+         rx='1.5' fill='%232979ff' stroke='%23f8fafc' stroke-width='1.8'/%3E%3Cpath d='M7.5 11V14H13' fill='none' 
+         stroke='%23f8fafc' stroke-width='1.8' stroke-linecap='round' 
+         stroke-linejoin='round'/%3E%3C/svg%3E"
+    >
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}ConfigFLow{% endblock %}</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+
+            <div class="brand">
+
+                <div class="brand-icon" aria-label="ConfigBridge logo">
+                    <svg
+                        width="28"
+                        height="28"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true">
+
+                        <!-- Upper-left square -->
+                        <rect
+                            x="4"
+                            y="4"
+                            width="7"
+                            height="7"
+                            rx="1.5"
+                        />
+
+                        <!-- Lower-right square -->
+                        <rect
+                            x="13"
+                            y="13"
+                            width="7"
+                            height="7"
+                            rx="1.5"
+                        />
+
+                        <!-- Connection: bottom of square 1 → left of square 2 -->
+                        <path d="M7.5 11V14H13" />
+
+                    </svg>
+                </div>
+
+
+                <div>
+                    <div class="brand-title">ConfigFLow</div>
+                    <div class="brand-subtitle">Engineering System</div>
+                </div>
+            </div>
+
+            <div class="sidebar-divider"></div>
+
+            <div class="nav-section-title">
+                SYSTEM
+            </div>
+
+            <nav class="navigation">
+
+                <a href="/"
+                class="nav-item {% if request.path == '/' %}active{% endif %}">
+                    <span class="nav-icon">⚙</span>
+                    <span>Configuration</span>
+                </a>
+
+                <a href="/migration"
+                class="nav-item {% if request.path.startswith('/migration') %}active{% endif %}">
+                    <span class="nav-icon">⇄</span>
+                    <span>Migration</span>
+                </a>
+
+            </nav>
+
+            <div class="sidebar-bottom">
+
+                <div class="system-status">
+                    <span class="status-dot"></span>
+
+                    <div>
+                        <div class="status-title">System Online</div>
+                        <div class="status-subtitle">ConfigFLow Service</div>
+                    </div>
+                </div>
+
+                <div class="version">
+                    ConfigFLow v1.0
+                </div>
+
+            </div>
+
+        </aside>
+
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <header class="topbar">
+
+                <div>
+                    <div class="page-title">
+                        {% block page_title %}ConfigFLow System{% endblock %}
+                    </div>
+
+                    <div class="page-description">
+                        {% block page_description %}
+                        Engineering configuration and migration platform
+                        {% endblock %}
+                    </div>
+                </div>
+
+                <div class="topbar-right">
+
+                    <button
+                        id="theme-toggle"
+                        class="theme-toggle"
+                        type="button"
+                        title="Toggle light / dark mode">
+                        ☀
+                    </button>
+
+                    <div class="connection-indicator">
+                        <span class="status-dot"></span>
+                        Ready
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <section class="content-area">
+
+                {% if request.path.startswith('/migration/') %}
+                <div class="page-back-navigation" style="margin-bottom: 16px;">
+                    <a href="{{ url_for('migration') }}" class="secondary-button">
+                        &#8592; Back to Migration
+                    </a>
+                </div>
+                {% endif %}
+
+                {% block content %}
+                {% endblock %}
+
+            </section>
+
+        </main>
+
+    </div>
+
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+<script>
+(function () {
+    const storageKey = "testpro-post-scroll-state";
+
+    function findHeading(text) {
+        const expected = text.trim().toLowerCase();
+        return Array.from(document.querySelectorAll("h1, h2, h3"))
+            .find(function (heading) {
+                return heading.textContent.trim().toLowerCase() === expected;
+            }) || null;
+    }
+
+    function getResultTarget(state) {
+        const label = (state.buttonText || "").toLowerCase();
+
+        if (state.path === "/migration/analysis") {
+            if (label.includes("analyze results")) {
+                const heading = findHeading("Analysis Summary");
+                return heading ? (heading.closest(".migration-workspace") || heading) : null;
+            }
+
+            if (label.includes("view details")) {
+                if (state.selectedModel) {
+                    const selectedName = state.selectedModel.trim();
+                    const heading = Array.from(document.querySelectorAll("h2, h3"))
+                        .find(function (item) {
+                            return item.textContent.trim() === selectedName;
+                        });
+                    if (heading) {
+                        return heading.closest(".migration-workspace") || heading;
+                    }
+                }
+            }
+
+            if (label.includes("compare with webpro")) {
+                const heading = findHeading("WebPRO Model Comparison");
+                return heading ? (heading.closest(".migration-workspace") || heading) : null;
+            }
+        }
+
+        if (state.path === "/migration/parameter-analysis" ||
+            state.path === "/migration/parameter-mapping") {
+            const tables = Array.from(document.querySelectorAll(".analysis-table"))
+                .filter(function (table) { return !table.closest("form"); });
+            if (tables.length) {
+                const firstTable = tables[0];
+                return firstTable.closest(".parameter-table-card") ||
+                    firstTable.closest(".migration-workspace") ||
+                    firstTable;
+            }
+        }
+
+        return null;
+    }
+
+    document.addEventListener("submit", function (event) {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement)) return;
+        if ((form.method || "GET").toUpperCase() !== "POST") return;
+
+        const actionUrl = new URL(form.action || window.location.href, window.location.href);
+        if (actionUrl.origin !== window.location.origin) return;
+        if (actionUrl.pathname.includes("/download")) return;
+
+        const selectedModel = form.querySelector('[name="selected_model"]');
+        const submitterText = event.submitter ? event.submitter.textContent.trim() : "";
+
+        sessionStorage.setItem(storageKey, JSON.stringify({
+            path: window.location.pathname,
+            scrollY: window.scrollY,
+            buttonText: submitterText,
+            selectedModel: selectedModel ? selectedModel.value : ""
+        }));
+    }, true);
+
+    window.addEventListener("pageshow", function () {
+        const rawState = sessionStorage.getItem(storageKey);
+        if (!rawState) return;
+
+        sessionStorage.removeItem(storageKey);
+
+        try {
+            const state = JSON.parse(rawState);
+            if (!state || state.path !== window.location.pathname) return;
+
+            requestAnimationFrame(function () {
+                const target = getResultTarget(state);
+                if (target) {
+                    target.scrollIntoView({ behavior: "auto", block: "start" });
+                } else if (Number.isFinite(state.scrollY)) {
+                    window.scrollTo(0, state.scrollY);
+                }
+            });
+        } catch (error) {
+            console.warn("Could not restore TestPro scroll position.", error);
+        }
+    });
+})();
+</script>
+</body>
+</html>
